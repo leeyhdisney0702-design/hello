@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>我的金融實驗室 - FV試算</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #f4f7f6; padding: 20px; }
+        .card { background: white; border-radius: 12px; padding: 20px; max-width: 600px; margin: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; width: 100%; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>投資未來值 (FV) 試算</h2>
+        <div class="input-group">
+            <label>初始本金 (元)</label>
+            <input type="number" id="principal" value="100000">
+        </div>
+        <div class="input-group">
+            <label>年化報酬率 (%)</label>
+            <input type="number" id="rate" value="7">
+        </div>
+        <div class="input-group">
+            <label>投資年數</label>
+            <input type="number" id="years" value="20">
+        </div>
+        <button onclick="calculate()">開始計算</button>
+        <canvas id="myChart" style="margin-top:20px;"></canvas>
+    </div>
+
+    <script>
+        let myChart = null;
+        function calculate() {
+            const P = parseFloat(document.getElementById('principal').value);
+            const r = parseFloat(document.getElementById('rate').value) / 100;
+            const n = parseInt(document.getElementById('years').value);
+            
+            let labels = [];
+            let data = [];
+            
+            for (let i = 0; i <= n; i++) {
+                labels.push("第 " + i + " 年");
+                // 複利公式: FV = P * (1 + r)^i
+                data.push(Math.round(P * Math.pow(1 + r, i)));
+            }
+
+            const ctx = document.getElementById('myChart').getContext('2d');
+            if (myChart) myChart.destroy(); // 重新計算時銷毀舊圖表
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{ label: '資產總值', data: data, borderColor: '#007bff', fill: true, backgroundColor: 'rgba(0, 123, 255, 0.1)' }]
+                }
+            });
+        }
+    </script>
+</body>
+</html>
