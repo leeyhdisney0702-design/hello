@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JS-Stats 統計學實驗室</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .page { display: none; }
+        .active { display: block; }
+        .stat-card { transition: all 0.3s ease; }
+        .stat-card:hover { transform: translateY(-5px); }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800">
+
+    <div id="home-page" class="page active container mx-auto px-6 py-16">
+        <header class="text-center mb-16">
+            <h1 class="text-5xl font-black text-slate-900 mb-4">StatLab</h1>
+            <p class="text-slate-500 text-lg">互動式統計學探索平台</p>
+        </header>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            <div onclick="showPage('desc')" class="stat-card cursor-pointer bg-white p-8 rounded-3xl shadow-sm border-b-8 border-blue-500">
+                <div class="text-4xl mb-4">📊</div>
+                <h2 class="font-bold text-xl">敘述統計</h2>
+                <p class="text-sm text-slate-400 mt-2">集中趨勢與離散程度分析</p>
+            </div>
+            <div onclick="showPage('prob')" class="stat-card cursor-pointer bg-white p-8 rounded-3xl shadow-sm border-b-8 border-emerald-500">
+                <div class="text-4xl mb-4">🎲</div>
+                <h2 class="font-bold text-xl">機率</h2>
+                <p class="text-sm text-slate-400 mt-2">常態分佈與鐘形曲線</p>
+            </div>
+            <div onclick="showPage('sampling')" class="stat-card cursor-pointer bg-white p-8 rounded-3xl shadow-sm border-b-8 border-orange-500">
+                <div class="text-4xl mb-4">🔄</div>
+                <h2 class="font-bold text-xl">抽樣方法</h2>
+                <p class="text-sm text-slate-400 mt-2">中央極限定理模擬</p>
+            </div>
+            <div onclick="showPage('estimate')" class="stat-card cursor-pointer bg-white p-8 rounded-3xl shadow-sm border-b-8 border-purple-500">
+                <div class="text-4xl mb-4">🎯</div>
+                <h2 class="font-bold text-xl">估計</h2>
+                <p class="text-sm text-slate-400 mt-2">信賴區間區間估計</p>
+            </div>
+            <div onclick="showPage('test')" class="stat-card cursor-pointer bg-white p-8 rounded-3xl shadow-sm border-b-8 border-rose-500">
+                <div class="text-4xl mb-4">⚖️</div>
+                <h2 class="font-bold text-xl">假設檢定</h2>
+                <p class="text-sm text-slate-400 mt-2">P-value 與 顯著性檢定</p>
+            </div>
+        </div>
+    </div>
+
+    <main class="max-w-4xl mx-auto px-6 py-10">
+        <button onclick="showPage('home-page')" class="mb-8 text-slate-400 hover:text-slate-800 transition flex items-center gap-2">
+            <span>←</span> 返回首頁
+        </button>
+
+        <div id="desc" class="page bg-white p-10 rounded-3xl shadow-xl">
+            <h2 class="text-3xl font-bold mb-6 border-l-4 border-blue-500 pl-4">敘述統計</h2>
+            <div class="mb-6">
+                <label class="block mb-2 text-sm font-medium">輸入數據 (用逗號隔開)</label>
+                <input type="text" id="desc-input" value="10, 20, 15, 25, 30, 18, 22" class="w-full p-3 bg-slate-50 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8" id="desc-results">
+                </div>
+            <canvas id="descChart"></canvas>
+        </div>
+
+        <div id="prob" class="page bg-white p-10 rounded-3xl shadow-xl">
+            <h2 class="text-3xl font-bold mb-6 border-l-4 border-emerald-500 pl-4">機率分佈</h2>
+            <div class="flex gap-6 mb-8">
+                <div class="flex-1">
+                    <label class="block text-sm">平均值 (μ)</label>
+                    <input type="number" id="prob-mu" value="0" step="0.5" class="w-full p-2 border rounded-lg mt-1">
+                </div>
+                <div class="flex-1">
+                    <label class="block text-sm">標準差 (σ)</label>
+                    <input type="number" id="prob-sigma" value="1" step="0.1" class="w-full p-2 border rounded-lg mt-1">
+                </div>
+            </div>
+            <canvas id="probChart"></canvas>
+        </div>
+
+        <div id="sampling" class="page bg-white p-10 rounded-3xl shadow-xl">
+            <h2 class="text-3xl font-bold mb-6 border-l-4 border-orange-500 pl-4">抽樣模擬 (CLT)</h2>
+            <p class="mb-6 text-slate-500">模擬從 0 到 100 的均勻分佈中隨機抽樣 30 次並取平均，重複 500 次。</p>
+            <button onclick="simulateCLT()" class="bg-orange-500 text-white px-8 py-3 rounded-xl hover:bg-orange-600 transition shadow-lg shadow-orange-200">開始模擬</button>
+            <canvas id="cltChart" class="mt-8"></canvas>
+        </div>
+
+        <div id="estimate" class="page bg-white p-10 rounded-3xl shadow-xl">
+            <h2 class="text-3xl font-bold mb-6 border-l-4 border-purple-500 pl-4">參數估計</h2>
+            <div class="p-6 bg-purple-50 rounded-2xl border border-purple-100 mb-6">
+                <p class="text-slate-600 mb-2">95% 信賴區間 (Confidence Interval)</p>
+                <h3 id="ci-display" class="text-3xl font-black text-purple-700">尚未計算</h3>
+            </div>
+            <p class="text-sm text-slate-400">※ 此計算基於「敘述統計」分頁中的最新輸入數據。</p>
+        </div>
+
+        <div id="test" class="page bg-white p-10 rounded-3xl shadow-xl">
+            <h2 class="text-3xl font-bold mb-6 border-l-4 border-rose-500 pl-4">假設檢定 (Z-Test)</h2>
+            <div class="space-y-4">
+                <div class="flex items-center gap-4">
+                    <span>虛無假設 H₀: μ = </span>
+                    <input type="number" id="h0-mu" value="18" class="p-2 border rounded-lg w-24">
+                </div>
+                <button onclick="runZTest()" class="bg-rose-500 text-white px-8 py-3 rounded-xl">執行檢定</button>
+                <div id="test-result" class="mt-6 p-6 rounded-2xl font-mono text-sm"></div>
+            </div>
+        </div>
+    </main>
+
+<script>
+    let charts = {};
+
+    function showPage(pageId) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(pageId).classList.add('active');
+        
+        // 頁面進入時自動觸發計算
+        if(pageId === 'desc') runDesc();
+        if(pageId === 'prob') runProb();
+        if(pageId === 'estimate') runEstimate();
+    }
+
+    // 1. 敘述統計邏輯
+    function runDesc() {
+        const input = document.getElementById('desc-input').value.split(',').map(Number).filter(n => !isNaN(n));
+        const mean = input.reduce((a, b) => a + b) / input.length;
+        const sorted = [...input].sort((a, b) => a - b);
+        const median = sorted.length % 2 === 0 ? (sorted[sorted.length/2-1] + sorted[sorted.length/2])/2 : sorted[Math.floor(sorted.length/2)];
+        const std = Math.sqrt(input.reduce((s, x) => s + Math.pow(x - mean, 2), 0) / input.length);
+
+        const resDiv = document.getElementById('desc-results');
+        resDiv.innerHTML = `
+            <div class="bg-blue-50 p-4 rounded-xl text-center"><span class="block text-xs text-blue-400">平均</span><b class="text-xl">${mean.toFixed(1)}</b></div>
+            <div class="bg-blue-50 p-4 rounded-xl text-center"><span class="block text-xs text-blue-400">中位數</span><b class="text-xl">${median.toFixed(1)}</b></div>
+            <div class="bg-blue-50 p-4 rounded-xl text-center"><span class="block text-xs text-blue-400">標準差</span><b class="text-xl">${std.toFixed(2)}</b></div>
+            <div class="bg-blue-50 p-4 rounded-xl text-center"><span class="block text-xs text-blue-400">樣本數</span><b class="text-xl">${input.length}</b></div>
+        `;
+        renderChart('descChart', '數據分佈', input, input.map((_,i) => i+1), 'bar', '#3b82f6');
+    }
+
+    // 2. 機率邏輯
+    function runProb() {
+        const mu = parseFloat(document.getElementById('prob-mu').value);
+        const sigma = parseFloat(document.getElementById('prob-sigma').value);
+        const x = [], y = [];
+        for(let i = mu - 4*sigma; i <= mu + 4*sigma; i += 0.1) {
+            x.push(i.toFixed(1));
+            y.push((1 / (sigma * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow((i - mu) / sigma, 2)));
+        }
+        renderChart('probChart', '常態分佈 PDF', y, x, 'line', '#10b981');
+    }
+
+    // 3. 抽樣方法模擬 (CLT)
+    function simulateCLT() {
+        const sampleMeans = [];
+        for(let i=0; i<500; i++) {
+            let sum = 0;
+            for(let j=0; j<30; j++) sum += Math.random() * 100;
+            sampleMeans.push(sum / 30);
+        }
+        // 簡單的分組統計
+        const bins = {};
+        sampleMeans.forEach(v => {
+            const b = Math.round(v);
+            bins[b] = (bins[b] || 0) + 1;
+        });
+        renderChart('cltChart', '樣本平均值的頻次', Object.values(bins), Object.keys(bins), 'bar', '#f59e0b');
+    }
+
+    // 4. 估計邏輯
+    function runEstimate() {
+        const input = document.getElementById('desc-input').value.split(',').map(Number).filter(n => !isNaN(n));
+        const n = input.length;
+        const mean = input.reduce((a, b) => a + b) / n;
+        const std = Math.sqrt(input.reduce((s, x) => s + Math.pow(x - mean, 2), 0) / (n - 1));
+        const se = std / Math.sqrt(n);
+        const z = 1.96; // 95% CI
+        document.getElementById('ci-display').innerText = `[${(mean - z*se).toFixed(2)} , ${(mean + z*se).toFixed(2)}]`;
+    }
+
+    // 5. 假設檢定邏輯
+    function runZTest() {
+        const input = document.getElementById('desc-input').value.split(',').map(Number).filter(n => !isNaN(n));
+        const h0 = parseFloat(document.getElementById('h0-mu').value);
+        const mean = input.reduce((a, b) => a + b) / input.length;
+        const std = 5; // 假設已知標準差為 5
+        const z = (mean - h0) / (std / Math.sqrt(input.length));
+        const p = 2 * (1 - normalCDF(Math.abs(z))); // 雙尾
+
+        const div = document.getElementById('test-result');
+        div.className = p < 0.05 ? "mt-6 p-6 rounded-2xl bg-rose-50 text-rose-700" : "mt-6 p-6 rounded-2xl bg-slate-50 text-slate-700";
+        div.innerHTML = `Z 值: ${z.toFixed(4)}<br>P 值: ${p.toFixed(4)}<br><br><b>${p < 0.05 ? "拒絕虛無假設 (顯著)" : "無法拒絕虛無假設 (不顯著)"}</b>`;
+    }
+
+    function normalCDF(x) {
+        return (1 + Math.erf(x / Math.sqrt(2))) / 2;
+    }
+    Math.erf = function(x) {
+        const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741, a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911;
+        const sign = x < 0 ? -1 : 1; x = Math.abs(x);
+        const t = 1.0 / (1.0 + p * x);
+        const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+        return sign * y;
+    };
+
+    function renderChart(id, label, data, labels, type, color) {
+        const ctx = document.getElementById(id).getContext('2d');
+        if (charts[id]) charts[id].destroy();
+        charts[id] = new Chart(ctx, {
+            type: type,
+            data: { labels: labels, datasets: [{ label: label, data: data, backgroundColor: color, borderColor: color, fill: type === 'line' ? false : true, tension: 0.4, pointRadius: 0 }] },
+            options: { responsive: true, plugins: { legend: { display: false } } }
+        });
+    }
+
+    // 監聽機率參數變化
+    document.getElementById('prob-mu').addEventListener('input', runProb);
+    document.getElementById('prob-sigma').addEventListener('input', runProb);
+</script>
+</body>
+</html>
